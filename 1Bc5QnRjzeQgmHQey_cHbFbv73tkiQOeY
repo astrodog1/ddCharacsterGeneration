@@ -1,4 +1,4 @@
-# Cleric ~Paladin simulator
+# Cleric~Paladin simulator
 import argparse
 import random
 from dataclasses import dataclass, field
