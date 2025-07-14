@@ -1,4 +1,4 @@
-# Cleric~Paladin simulator
+# Mage simulator
 import argparse
 import random
 from dataclasses import dataclass, field
