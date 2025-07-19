@@ -9,6 +9,9 @@ from typing import List, Dict
 CharClass: str
 MusterOutLevel: int
 
+def getPlayerClass() -> str:
+    global CharClass
+    return CharClass
 
 def roll(dice: str) -> int:
     n, d = map(int, dice.lower().split("d"))
@@ -32,47 +35,96 @@ class ClassStats:
     K_Runes: int 
 
 
-def generateClassStats() -> ClassStats:
+def generateClassStats(CharClass) -> ClassStats:
     return ClassStats(
-        STR=roll("3d6"),
-        DEX=roll("3d6"),
-        CON=roll("3d6"),
-        WIS=roll("3d6") +2,
-        INT=roll("3d6"),
-        CHA=roll("3d6"),
-        PER=roll("3d6"),
-        REP=roll("1d6"),
-        SS=roll("1d6"),
-        playerclass='mage',  # default class
-        LIT=roll("1d20"),
-        K_Lore=roll("1d6"),
-        K_Beast=roll("1d6"),
-        K_Runes=roll("1d6")
+        STR=roll("3d6") + 2 if CharClass in ("guards") else 0,
+        DEX=roll("3d6") + 2 if CharClass in ("ranger","rogue") else 0,
+        CON=roll("3d6") + 2 if CharClass in ("guards") else 0,
+        WIS=roll("3d6") + 2 if CharClass in ("cleric", "paladin") else 0,
+        INT=roll("3d6") + 2 if CharClass in ("mage") else 0,
+        CHA=roll("3d6") + 2 if CharClass in ("paladin") else 0,
+        PER=roll("3d6") + 2 if CharClass in ("ranger") else 0,
+        REP=roll("1d6") + 2 if CharClass in ("guards") else 0,
+        SS=roll("1d6")  + 2 if CharClass in ("guards") else 0,
+        playerclass=CharClass,  # default class
+        LIT=0, # Literacy skill, set to 0 initially
+        K_Lore=roll("1d6") + 2 if CharClass in ("cleric") else 0,
+        K_Beast=roll("1d6") + 2 if CharClass in ("ranger") else 0,
+        K_Runes=roll("1d6") + 2 if CharClass in ("mage") else 0
     )
 
-
-#Quarter Assignment 		    ,band 		    ,Survival	,lvlup	    ,GP
-mageAssignments =[
-("Glyphbinding"			        ,5			    ,1		    ,18		    ,"1d5"),
-("Apothecary"			        ,9			    ,1		    ,18		    ,"1d5"),
-("Escort (Diplomacy-local)"	    ,13			    ,1		    ,18		    ,"1d20"),
-("Escort (Diplomacy-Foreign)"	,15			    ,1		    ,18		    ,"1d20"),
-("Research mission - Lore"		,16			    ,3		    ,10		    ,"1d100"),
-("Research mission - Beastery"	,17			    ,6		    ,10		    ,"1d100"),
-("Research mission - Runes"	    ,18			    ,6		    ,10		    ,"1d100"),
-("Rare magical component quest"	,19			    ,7		    ,8		    ,"1d100"),
-("Battle"			            ,20			    ,7		    ,5		    ,"1d100")
+# Assignment		Survive	    Levelup	    stockade	Heroism  	Rangers Guards  gpSaved
+FootAssignments = [
+("Training"	            ,1	    ,19	        ,1	        ,99         ,99     ,99     ,"1d10")
+,("Garrison"	        ,12	    ,20	        ,2	        ,20	        ,99	    ,99     ,"1d10")
+,("Border"	            ,15	    ,18	        ,2	        ,19	        ,99     ,99     ,"1d10")
+,("Convoy duty"	        ,16	    ,17         ,1	        ,19         ,20     ,20     ,"1d10")
+,("Combat-raid"	        ,19	    ,12	        ,1          ,17	        ,15	    ,15	    ,"1d100")
+,("Combat-melee"	    ,20	    ,10	        ,1          ,17	        ,17	    ,17	    ,"1d100")
 ]
 
-# Roll	    ,Within Kingdom		            ,Outside Kingdom
-MageDiplomaticMission =[
-(10         ,"Barony"                      ,"Elves"),
-(13         ,"Social Event"                ,"Dwarves"),
-(15         ,"Goblins"                     ,"Hobbits"),
-(17         ,"Lizardmen"                   ,"Human A"),
-(19         ,"Orcs"                        ,"Human B"),
-(20         ,"Fey"                         ,"Human C")
+# Stockade	
+FootStockadeOffense = [
+(1-10	,"drunk on duty")
+,(11-16	,"brawling")
+,(17-19	,"AWOL")
+,(20	,"Insubordination")
 ]
+
+#Raid/Melee	
+FootRaidMelee = [
+(1-12	,"human tribe")
+,(13-16	,"goblins")
+,(17-18	,"orcs")
+,(19-20	,"lizardmen")
+]
+
+#assign     roll		Survive	Level	Heroism     gpSaved
+RangerAssignments = [
+("Training"	            ,1	    ,2	   ,19	        ,"1D20")
+,("Escort"	            ,10	    ,2	   ,17	        ,"1D20")
+,("Scout"	            ,16	    ,5	   ,19	        ,"1D20")
+,("Raid"	            ,19	    ,5	   ,17	        ,"1D20")
+,("Rescue"	            ,20		,6	   ,10	        ,"1D20")
+]
+
+#Scout/Raid/Rescue				
+RangerScoutRaidRescue = [
+(1-12	            ,"human tribe"			,"Land")
+,(14	            ,"goblins"			    ,"Land")
+,(16	            ,"orcs"		            ,"Land") 
+,(17	            ,"lizardmin"			,"Land")
+,(18	            ,"fey/orcs"			    ,"Land")
+,(19	            ,"fey/gnolls"			,"Land")
+,(20	            ,"fey/other"			,"Air")
+]
+
+# Guards Assignment             roll    survive	Level	Heroism     gpSaved
+GuardsAssignment= [
+("Training"		                ,1	    ,1	    ,19	        ,0      ,"1d25")
+,("Escort"		                ,8	    ,2	    ,18	        ,20     ,"1d25")
+,("Battle-minor"		        ,12	    ,5	    ,16	        ,17     ,"1d25")
+,("Battle-major"		        ,15	    ,6	    ,13	        ,15     ,"1d25")
+,("Research mission-Lore"		,16	    ,4	    ,14         ,14     ,"1d100")
+,("Research mission-Beastery"   ,17	    ,4	    ,14	        ,14     ,"1d100")
+,("Research mission-Runes"		,18	    ,4	    ,14	        ,14     ,"1d100")
+,("Rare magical component quest",19	    ,4	    ,14	        ,14     ,"1d100")
+,("Fortification Assault"		,20	    ,7	    ,10	        ,13     ,"1d100")
+]
+
+#roll        who            	,where
+GuardRaidMelee = [
+(3	        ,"human tribe" 		,"Land")
+,(6	        ,"human tribe" 		,"underground")
+,(10	    ,"goblins"		    ,"Land")
+,(12	    ,"goblins"		    ,"Underground")
+,(14	    ,"orcs"             ,"Land")			
+,(16	    ,"orcs"             ,"Underground")			
+,(18	    ,"lizardmen"        ,"Land")			
+,(20	    ,"lizardmen"        ,"Underground")			
+]
+
+
 
 #Item               ,chance/year    ,qtyRoll   ,description
 MusteringOut = [
@@ -108,16 +160,26 @@ class Cadet:
     level: int = 0
     gp: int = 0
     rep: float = 2.0
-    playerClass: str = 'mage'  # default class
+    playerClass: str = getPlayerClass()  # default class
     # jail_log: List[str] = field(default_factory=list)
     quarters: List[Dict] = field(default_factory=list)
     
+#getAssignment(CharClass: str) -> List[Dict]:
+def getAssignment(CharClass: str) -> List[tuple]:
+    if CharClass == "ranger":
+        return RangerAssignments
+    elif CharClass == "guards":
+        return GuardsAssignment
+    else:
+        return FootAssignments  
+    
+
 
 # '->' means the function returns a Cadet object    parser = argparse.ArgumentParser(description="")
 def runClassSim() -> Cadet:
     count = 1
     while True:  #sim loop
-        cadet = Cadet(id=count, stats=generateClassStats())
+        cadet = Cadet(id=count, stats=generateClassStats(CharClass))
         cadet.rep = cadet.stats.REP
         year, quarter = 1, 1  #restart year/qtr for each cadet
 
